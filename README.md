@@ -2,6 +2,10 @@
 
 A cyberpunk-styled geopolitical news dashboard with live video feeds, interactive maps, flight/marine tracking, and real-time news aggregation. Inspired by Blade Runner aesthetics and 90s news TV broadcasts.
 
+**Live Demo:** https://situation-monitor-phi.vercel.app
+
+**GitHub:** https://github.com/gabob23/situation-monitor
+
 ## Features
 
 ### Live Video Broadcasts
@@ -59,6 +63,10 @@ A cyberpunk-styled geopolitical news dashboard with live video feeds, interactiv
 ## Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/gabob23/situation-monitor.git
+cd situation-monitor
+
 # Install dependencies
 npm install
 
@@ -67,6 +75,25 @@ npm run dev
 
 # Build for production
 npm run build
+```
+
+## Deployment
+
+This project is deployed on Vercel with automatic deployments from the `main` branch.
+
+To deploy your own instance:
+
+1. Fork this repository
+2. Import to Vercel: https://vercel.com/new
+3. Connect your GitHub repository
+4. Deploy (uses auto-detected Vite settings)
+
+Alternatively, use the Vercel CLI:
+
+```bash
+npm install -g vercel
+vercel login
+vercel --prod
 ```
 
 ## Project Structure
