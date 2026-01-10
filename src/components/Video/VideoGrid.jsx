@@ -1,51 +1,64 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// Pool of 24/7 news channels from around the world
-const ALL_STREAMS = [
-  // Western
-  { id: 'aljazeeraCH', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-  { id: 'france24CH', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
-  { id: 'dwCH', name: 'DW News', videoId: 'pqabxBKzZ6M' },
-  { id: 'euronewsCH', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
-  { id: 'skyCH', name: 'Sky News', videoId: '9Auq9mYxFEE' },
-  { id: 'wionCH', name: 'WION', videoId: 'Qz__Eptw1JM' },
-  { id: 'trtCH', name: 'TRT World', videoId: '5VF4aor94gw' },
-  { id: 'indiaTodayCH', name: 'India Today', videoId: 'rqc2UfuGN7Q' },
-  { id: 'cnaCH', name: 'CNA', videoId: 'XWq5kBlakcQ' },
-  { id: 'africanewsCH', name: 'Africanews', videoId: 'NQjabLGdP5g' },
-  { id: 'ndtvCH', name: 'NDTV 24x7', videoId: 'WjzR1vXfWmE' },
-  { id: 'abcCH', name: 'ABC News AU', videoId: 'vOTiJkg1voo' },
-  // Asian/Chinese
-  { id: 'cgtnCH', name: 'CGTN', videoId: 'tRx0vx2rJJg' },
-  { id: 'cgtnDocCH', name: 'CGTN Documentary', videoId: 'fegKVPMFo9o' },
-  { id: 'nhkCH', name: 'NHK World Japan', videoId: 'f0lYkdA-Gtw' },
-  { id: 'phoenixCH', name: 'Phoenix News 凤凰卫视', videoId: 'HFeKrPwQ59E' },
-  // More alternatives
-  { id: 'abc2CH', name: 'ABC News Live', videoId: 'w_Ma8oQLmSM' },
-  { id: 'nbcCH', name: 'NBC News Now', videoId: 'YMazKwSReVE' },
-]
+// Streams organized by region - NEVER SHOW EMPTY! Auto-cycle on error
+const STREAMS_BY_REGION = {
+  'North America': [
+    { id: 'abc-us', name: 'ABC News Live', videoId: 'w_Ma8oQLmSM' },
+    { id: 'nbc-us', name: 'NBC News Now', videoId: 'YMazKwSReVE' },
+    { id: 'cbs-us', name: 'CBS News', videoId: 'cHkVs8cPQu0' },
+    { id: 'fox-us', name: 'Fox News', videoId: 'HKXgRUCzLqA' },
+  ],
+  'South America': [
+    { id: 'telesur', name: 'Telesur', videoId: 'bNJsDCE2Nok' },
+  ],
+  'Europe': [
+    { id: 'france24', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
+    { id: 'dw', name: 'DW News', videoId: 'pqabxBKzZ6M' },
+    { id: 'euronews', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
+    { id: 'sky', name: 'Sky News', videoId: '9Auq9mYxFEE' },
+  ],
+  'Asia': [
+    { id: 'cgtn', name: 'CGTN', videoId: 'tRx0vx2rJJg' },
+    { id: 'cna', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
+    { id: 'wion', name: 'WION India', videoId: 'Qz__Eptw1JM' },
+    { id: 'india-today', name: 'India Today', videoId: 'rqc2UfuGN7Q' },
+    { id: 'ndtv', name: 'NDTV 24x7', videoId: 'WjzR1vXfWmE' },
+    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'M1cg5HNierQ' },
+    { id: 'set-taiwan', name: 'SET News Taiwan', videoId: '4ZVUmEUFwaY' },
+    { id: 'phoenix', name: 'Phoenix News 凤凰', videoId: 'HFeKrPwQ59E' },
+  ],
+  'Oceania': [
+    { id: 'abc-au', name: 'ABC News AU', videoId: 'vOTiJkg1voo' },
+  ],
+  'Middle East': [
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+  ],
+  'Africa': [
+    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+  ],
+}
 
-// Default starting streams for each cell - diverse mix
-const DEFAULT_STREAMS = [0, 12, 14, 5] // Al Jazeera, CGTN, NHK World, WION
+// Flatten all streams for GLOBAL mode
+const ALL_STREAMS = Object.values(STREAMS_BY_REGION).flat()
 
-function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
+function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, availableStreams }) {
   const [streamIndex, setStreamIndex] = useState(defaultStreamIndex)
   const [showMenu, setShowMenu] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const playerRef = useRef(null)
   const keyRef = useRef(0)
 
-  const stream = ALL_STREAMS[streamIndex]
+  const stream = availableStreams[streamIndex % availableStreams.length]
   const isActive = activeCell === cellIndex
 
-  // Static opts - never change these to avoid reload
   const opts = {
     height: '100%',
     width: '100%',
     playerVars: {
       autoplay: 1,
-      mute: 1, // Always start muted
+      mute: 1,
       controls: 0,
       disablekb: 1,
       fs: 0,
@@ -60,21 +73,18 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
   const handleReady = (event) => {
     playerRef.current = event.target
     setIsReady(true)
-    // Start muted
     event.target.mute()
   }
 
   const handleError = (event) => {
     console.log(`Video error for ${stream.name}, cycling to next...`)
-    // Auto-cycle to next stream on error
     setTimeout(() => {
-      setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
+      setStreamIndex((prev) => (prev + 1) % availableStreams.length)
       keyRef.current += 1
       setIsReady(false)
     }, 1000)
   }
 
-  // Handle mute/unmute when active state changes
   useEffect(() => {
     if (isReady && playerRef.current) {
       try {
@@ -96,7 +106,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
 
   const cycleNext = (e) => {
     e.stopPropagation()
-    setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
+    setStreamIndex((prev) => (prev + 1) % availableStreams.length)
     keyRef.current += 1
     setIsReady(false)
     setShowMenu(false)
@@ -109,6 +119,13 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
     setIsReady(false)
     setShowMenu(false)
   }
+
+  // Reset stream index when available streams change
+  useEffect(() => {
+    setStreamIndex(defaultStreamIndex % availableStreams.length)
+    keyRef.current += 1
+    setIsReady(false)
+  }, [availableStreams, defaultStreamIndex])
 
   return (
     <div
@@ -123,7 +140,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
         </div>
         {showMenu && (
           <div className="video-dropdown" onClick={(e) => e.stopPropagation()}>
-            {ALL_STREAMS.map((s, idx) => (
+            {availableStreams.map((s, idx) => (
               <button
                 key={s.id}
                 className={`dropdown-item ${idx === streamIndex ? 'active' : ''}`}
@@ -153,41 +170,140 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
 
 export default function VideoGrid() {
   const [activeCell, setActiveCell] = useState(null)
+  const [selectedRegion, setSelectedRegion] = useState('GLOBAL')
+
+  const regions = ['GLOBAL', 'North America', 'South America', 'Europe', 'Asia', 'Oceania', 'Middle East', 'Africa']
+
+  const availableStreams = selectedRegion === 'GLOBAL'
+    ? ALL_STREAMS
+    : STREAMS_BY_REGION[selectedRegion] || ALL_STREAMS
+
+  const muteAll = () => {
+    setActiveCell(null)
+  }
 
   return (
-    <div className="video-grid">
-      <VideoCell
-        defaultStreamIndex={DEFAULT_STREAMS[0]}
-        cellIndex={0}
-        activeCell={activeCell}
-        onActivate={setActiveCell}
-      />
-      <VideoCell
-        defaultStreamIndex={DEFAULT_STREAMS[1]}
-        cellIndex={1}
-        activeCell={activeCell}
-        onActivate={setActiveCell}
-      />
-      <VideoCell
-        defaultStreamIndex={DEFAULT_STREAMS[2]}
-        cellIndex={2}
-        activeCell={activeCell}
-        onActivate={setActiveCell}
-      />
-      <VideoCell
-        defaultStreamIndex={DEFAULT_STREAMS[3]}
-        cellIndex={3}
-        activeCell={activeCell}
-        onActivate={setActiveCell}
-      />
+    <div className="video-grid-container">
+      <div className="video-controls">
+        <div className="region-selector">
+          <span className="control-label">REGION:</span>
+          {regions.map((region) => (
+            <button
+              key={region}
+              className={`region-btn ${selectedRegion === region ? 'active' : ''}`}
+              onClick={() => setSelectedRegion(region)}
+            >
+              {region}
+            </button>
+          ))}
+        </div>
+        <button className="mute-all-btn" onClick={muteAll}>
+          MUTE ALL
+        </button>
+      </div>
+
+      <div className="video-grid">
+        <VideoCell
+          defaultStreamIndex={0}
+          cellIndex={0}
+          activeCell={activeCell}
+          onActivate={setActiveCell}
+          availableStreams={availableStreams}
+        />
+        <VideoCell
+          defaultStreamIndex={1}
+          cellIndex={1}
+          activeCell={activeCell}
+          onActivate={setActiveCell}
+          availableStreams={availableStreams}
+        />
+        <VideoCell
+          defaultStreamIndex={2}
+          cellIndex={2}
+          activeCell={activeCell}
+          onActivate={setActiveCell}
+          availableStreams={availableStreams}
+        />
+        <VideoCell
+          defaultStreamIndex={3}
+          cellIndex={3}
+          activeCell={activeCell}
+          onActivate={setActiveCell}
+          availableStreams={availableStreams}
+        />
+      </div>
 
       <style>{`
+        .video-grid-container {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+        .video-controls {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 6px 8px;
+          background: rgba(0, 0, 0, 0.8);
+          border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .region-selector {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        .control-label {
+          font-family: var(--font-mono);
+          font-size: 9px;
+          color: var(--text-muted);
+          letter-spacing: 1px;
+          margin-right: 4px;
+        }
+        .region-btn {
+          padding: 3px 8px;
+          background: transparent;
+          border: 1px solid rgba(0, 255, 255, 0.3);
+          color: var(--text-secondary);
+          font-family: var(--font-mono);
+          font-size: 9px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .region-btn:hover {
+          border-color: var(--neon-cyan);
+          color: var(--neon-cyan);
+        }
+        .region-btn.active {
+          background: rgba(0, 255, 255, 0.2);
+          border-color: var(--neon-cyan);
+          color: var(--neon-cyan);
+          text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .mute-all-btn {
+          padding: 4px 12px;
+          background: transparent;
+          border: 1px solid rgba(255, 51, 51, 0.5);
+          color: var(--neon-red);
+          font-family: var(--font-mono);
+          font-size: 9px;
+          cursor: pointer;
+          letter-spacing: 1px;
+          transition: all 0.2s;
+        }
+        .mute-all-btn:hover {
+          background: rgba(255, 51, 51, 0.2);
+          border-color: var(--neon-red);
+          box-shadow: 0 0 5px rgba(255, 51, 51, 0.3);
+        }
         .video-grid {
+          flex: 1;
           display: grid;
           grid-template-columns: 1fr 1fr;
           grid-template-rows: 1fr 1fr;
           gap: 3px;
-          height: 100%;
           background: #000;
         }
         .video-cell {

@@ -1,17 +1,17 @@
 import { useState } from 'react'
 
-// Tracker modes - using FlightAware for flights (no ad blocker issues)
+// Tracker modes - using OpenSky Network for flights (open data)
 const TRACKERS = {
   flights: {
     name: 'FLIGHTS',
-    // FlightAware live tracking maps
+    // OpenSky Network live tracking
     getUrl: (region) => {
       const regions = {
-        europe: 'https://www.flightaware.com/live/map?center=50,10&zoom=5',
-        middleeast: 'https://www.flightaware.com/live/map?center=30,45&zoom=5',
-        asia: 'https://www.flightaware.com/live/map?center=35,105&zoom=4',
-        usa: 'https://www.flightaware.com/live/map?center=39,-98&zoom=4',
-        global: 'https://www.flightaware.com/live/map?center=30,0&zoom=2',
+        europe: 'https://opensky-network.org/network/explorer?zoom=5&lat=50&lon=10',
+        middleeast: 'https://opensky-network.org/network/explorer?zoom=5&lat=30&lon=45',
+        asia: 'https://opensky-network.org/network/explorer?zoom=4&lat=35&lon=105',
+        usa: 'https://opensky-network.org/network/explorer?zoom=4&lat=39&lon=-98',
+        global: 'https://opensky-network.org/network/explorer?zoom=2&lat=30&lon=0',
       }
       return regions[region] || regions.global
     }
@@ -49,7 +49,7 @@ export default function LiveTracker() {
 
   const openExternal = () => {
     const externalUrls = {
-      flights: 'https://www.flightaware.com/live/',
+      flights: 'https://opensky-network.org/',
       marine: 'https://www.shipfinder.co/'
     }
     window.open(externalUrls[mode], '_blank', 'noopener,noreferrer')
@@ -101,7 +101,7 @@ export default function LiveTracker() {
       {/* Footer */}
       <div className="tracker-footer">
         <span className="tracker-info">
-          {mode === 'flights' ? 'FlightAware' : 'ShipFinder'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
+          {mode === 'flights' ? 'OpenSky Network' : 'ShipFinder'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
         </span>
         <button className="ext-btn" onClick={openExternal}>
           Open Full Site ↗
