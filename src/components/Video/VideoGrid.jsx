@@ -1,68 +1,103 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import YouTube from 'react-youtube'
 
 // Pool of 24/7 news channels - using channel live stream format
-// These auto-resolve to whatever the channel is currently streaming
 const ALL_STREAMS = [
-  // Primary news channels (usually have 24/7 live streams)
-  { id: 'aljazeeraCH', name: 'Al Jazeera EN', url: 'https://www.youtube.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJj3l8Bg&autoplay=1&mute=1' },
-  { id: 'france24CH', name: 'France 24 EN', url: 'https://www.youtube.com/embed/live_stream?channel=UCQfwfsi5VrQ8yKZ-UWmAEFg&autoplay=1&mute=1' },
-  { id: 'dwCH', name: 'DW News', url: 'https://www.youtube.com/embed/live_stream?channel=UCknLrEdhRCp1aegoMqRaCZg&autoplay=1&mute=1' },
-  { id: 'euronewsCH', name: 'Euronews EN', url: 'https://www.youtube.com/embed/live_stream?channel=UCW2QcKZiU8aUGg4yxCIditg&autoplay=1&mute=1' },
-  { id: 'skyCH', name: 'Sky News', url: 'https://www.youtube.com/embed/live_stream?channel=UCoMdktPbSTixAyNGwb-UYkQ&autoplay=1&mute=1' },
-  { id: 'wionCH', name: 'WION', url: 'https://www.youtube.com/embed/live_stream?channel=UC_gUM8rL-Lrg6O3adPW9K1g&autoplay=1&mute=1' },
-  { id: 'trtCH', name: 'TRT World', url: 'https://www.youtube.com/embed/live_stream?channel=UC7fWeaHhqgM4Lba7ftsL0Ag&autoplay=1&mute=1' },
-  { id: 'indiaTodayCH', name: 'India Today', url: 'https://www.youtube.com/embed/live_stream?channel=UCYPvAwZP8pZhSMW8qs7cVCw&autoplay=1&mute=1' },
-  { id: 'cnaCH', name: 'CNA', url: 'https://www.youtube.com/embed/live_stream?channel=UCo8bcnLyZH8tBIH9V1mLgqQ&autoplay=1&mute=1' },
-  { id: 'africanewsCH', name: 'Africanews', url: 'https://www.youtube.com/embed/live_stream?channel=UC1_E8NeF5QHY2dtdLRBCCLA&autoplay=1&mute=1' },
-  { id: 'ndtvCH', name: 'NDTV 24x7', url: 'https://www.youtube.com/embed/live_stream?channel=UCttspZesZIDEwwpVIgoZtWQ&autoplay=1&mute=1' },
-  { id: 'abcCH', name: 'ABC News AU', url: 'https://www.youtube.com/embed/live_stream?channel=UCVgO39Bk5sMo66-6o6Spn6Q&autoplay=1&mute=1' },
+  { id: 'aljazeeraCH', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+  { id: 'france24CH', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
+  { id: 'dwCH', name: 'DW News', videoId: 'pqabxBKzZ6M' },
+  { id: 'euronewsCH', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
+  { id: 'skyCH', name: 'Sky News', videoId: '9Auq9mYxFEE' },
+  { id: 'wionCH', name: 'WION', videoId: 'Qz__Eptw1JM' },
+  { id: 'trtCH', name: 'TRT World', videoId: '5VF4aor94gw' },
+  { id: 'indiaTodayCH', name: 'India Today', videoId: 'rqc2UfuGN7Q' },
+  { id: 'cnaCH', name: 'CNA', videoId: 'XWq5kBlakcQ' },
+  { id: 'africanewsCH', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+  { id: 'ndtvCH', name: 'NDTV 24x7', videoId: 'WjzR1vXfWmE' },
+  { id: 'abcCH', name: 'ABC News AU', videoId: 'vOTiJkg1voo' },
 ]
 
 // Default starting streams for each cell
 const DEFAULT_STREAMS = [0, 1, 2, 3]
 
-function VideoCell({ defaultStreamIndex }) {
+function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
   const [streamIndex, setStreamIndex] = useState(defaultStreamIndex)
   const [showMenu, setShowMenu] = useState(false)
-  const [key, setKey] = useState(Date.now())
+  const playerRef = useRef(null)
 
   const stream = ALL_STREAMS[streamIndex]
+  const isActive = activeCell === cellIndex
 
-  const cycleNext = () => {
-    setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
-    setKey(Date.now())
-    setShowMenu(false)
+  const opts = {
+    height: '100%',
+    width: '100%',
+    playerVars: {
+      autoplay: 1,
+      mute: isActive ? 0 : 1,
+      controls: 0,
+      disablekb: 1,
+      fs: 0,
+      iv_load_policy: 3,
+      modestbranding: 1,
+      playsinline: 1,
+      rel: 0,
+      showinfo: 0,
+    },
   }
 
-  const selectStream = (idx) => {
-    setStreamIndex(idx)
-    setKey(Date.now())
-    setShowMenu(false)
+  const handleReady = (event) => {
+    playerRef.current = event.target
+    if (isActive) {
+      event.target.unMute()
+    } else {
+      event.target.mute()
+    }
   }
 
-  // Refresh iframe periodically to catch streams that come online
   useEffect(() => {
-    const interval = setInterval(() => {
-      setKey(Date.now())
-    }, 300000) // Refresh every 5 minutes
-    return () => clearInterval(interval)
-  }, [])
+    if (playerRef.current) {
+      if (isActive) {
+        playerRef.current.unMute()
+      } else {
+        playerRef.current.mute()
+      }
+    }
+  }, [isActive])
+
+  const handleCellClick = () => {
+    onActivate(cellIndex)
+  }
+
+  const cycleNext = (e) => {
+    e.stopPropagation()
+    setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
+    setShowMenu(false)
+  }
+
+  const selectStream = (idx, e) => {
+    e.stopPropagation()
+    setStreamIndex(idx)
+    setShowMenu(false)
+  }
 
   return (
-    <div className="video-cell">
+    <div
+      className={`video-cell ${isActive ? 'active' : ''}`}
+      onClick={handleCellClick}
+    >
       <div className="video-cell-header">
         <span className="video-cell-label">{stream.name}</span>
         <div className="video-cell-controls">
           <button className="cycle-btn" onClick={cycleNext} title="Next channel">⟳</button>
-          <button className="menu-btn" onClick={() => setShowMenu(!showMenu)}>▼</button>
+          <button className="menu-btn" onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}>▼</button>
         </div>
         {showMenu && (
-          <div className="video-dropdown">
+          <div className="video-dropdown" onClick={(e) => e.stopPropagation()}>
             {ALL_STREAMS.map((s, idx) => (
               <button
                 key={s.id}
                 className={`dropdown-item ${idx === streamIndex ? 'active' : ''}`}
-                onClick={() => selectStream(idx)}
+                onClick={(e) => selectStream(idx, e)}
               >
                 {s.name}
               </button>
@@ -70,24 +105,51 @@ function VideoCell({ defaultStreamIndex }) {
           </div>
         )}
       </div>
-      <iframe
-        key={key}
-        src={stream.url}
-        title={stream.name}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
+      <div className="youtube-wrapper">
+        <YouTube
+          videoId={stream.videoId}
+          opts={opts}
+          onReady={handleReady}
+        />
+      </div>
+      {isActive && (
+        <div className="active-indicator">
+          <span className="sound-icon">🔊</span>
+        </div>
+      )}
     </div>
   )
 }
 
 export default function VideoGrid() {
+  const [activeCell, setActiveCell] = useState(null)
+
   return (
     <div className="video-grid">
-      <VideoCell defaultStreamIndex={DEFAULT_STREAMS[0]} />
-      <VideoCell defaultStreamIndex={DEFAULT_STREAMS[1]} />
-      <VideoCell defaultStreamIndex={DEFAULT_STREAMS[2]} />
-      <VideoCell defaultStreamIndex={DEFAULT_STREAMS[3]} />
+      <VideoCell
+        defaultStreamIndex={DEFAULT_STREAMS[0]}
+        cellIndex={0}
+        activeCell={activeCell}
+        onActivate={setActiveCell}
+      />
+      <VideoCell
+        defaultStreamIndex={DEFAULT_STREAMS[1]}
+        cellIndex={1}
+        activeCell={activeCell}
+        onActivate={setActiveCell}
+      />
+      <VideoCell
+        defaultStreamIndex={DEFAULT_STREAMS[2]}
+        cellIndex={2}
+        activeCell={activeCell}
+        onActivate={setActiveCell}
+      />
+      <VideoCell
+        defaultStreamIndex={DEFAULT_STREAMS[3]}
+        cellIndex={3}
+        activeCell={activeCell}
+        onActivate={setActiveCell}
+      />
 
       <style>{`
         .video-grid {
@@ -101,13 +163,27 @@ export default function VideoGrid() {
         .video-cell {
           position: relative;
           background: #0a0a0f;
-          border: 1px solid rgba(0, 255, 255, 0.2);
+          border: 2px solid rgba(0, 255, 255, 0.2);
           overflow: hidden;
+          cursor: pointer;
+          transition: border-color 0.3s;
         }
-        .video-cell iframe {
+        .video-cell:hover {
+          border-color: rgba(0, 255, 255, 0.5);
+        }
+        .video-cell.active {
+          border-color: var(--neon-green);
+          box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+        .youtube-wrapper {
+          width: 100%;
+          height: 100%;
+        }
+        .youtube-wrapper iframe {
           width: 100%;
           height: 100%;
           border: none;
+          pointer-events: none;
         }
         .video-cell-header {
           position: absolute;
@@ -128,6 +204,10 @@ export default function VideoGrid() {
           text-shadow: 0 0 5px var(--neon-cyan);
           letter-spacing: 1px;
         }
+        .video-cell.active .video-cell-label {
+          color: var(--neon-green);
+          text-shadow: 0 0 5px var(--neon-green);
+        }
         .video-cell-controls {
           display: flex;
           align-items: center;
@@ -141,6 +221,7 @@ export default function VideoGrid() {
           cursor: pointer;
           padding: 2px 6px;
           border-radius: 2px;
+          pointer-events: auto;
         }
         .cycle-btn:hover, .menu-btn:hover {
           background: rgba(0, 255, 255, 0.2);
@@ -155,6 +236,7 @@ export default function VideoGrid() {
           z-index: 100;
           max-height: 200px;
           overflow-y: auto;
+          pointer-events: auto;
         }
         .dropdown-item {
           display: block;
@@ -176,6 +258,19 @@ export default function VideoGrid() {
         .dropdown-item.active {
           color: var(--neon-cyan);
           background: rgba(0, 255, 255, 0.1);
+        }
+        .active-indicator {
+          position: absolute;
+          bottom: 8px;
+          right: 8px;
+          background: rgba(0, 255, 136, 0.9);
+          padding: 4px 8px;
+          border-radius: 3px;
+          z-index: 10;
+        }
+        .sound-icon {
+          font-size: 14px;
+          filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.8));
         }
         @media (max-width: 768px) {
           .video-grid {

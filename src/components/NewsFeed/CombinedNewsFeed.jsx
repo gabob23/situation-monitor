@@ -211,13 +211,17 @@ export default function CombinedNewsFeed() {
         }
         .feed-scroll {
           flex: 1;
-          overflow-y: auto;
+          overflow-y: scroll;
+          overflow-x: hidden;
         }
         .feed-scroll::-webkit-scrollbar {
           width: 3px;
         }
         .feed-scroll::-webkit-scrollbar-thumb {
           background: var(--neon-cyan);
+        }
+        .feed-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
         }
         .feed-item {
           display: flex;

@@ -1,31 +1,31 @@
 import { useState } from 'react'
 
-// Tracker modes - using ADS-B Exchange for flights (more reliable embeds)
+// Tracker modes - using FlightAware for flights (no ad blocker issues)
 const TRACKERS = {
   flights: {
     name: 'FLIGHTS',
-    // ADS-B Exchange - open source flight tracking with working embeds
+    // FlightAware live tracking maps
     getUrl: (region) => {
       const regions = {
-        europe: 'https://globe.adsbexchange.com/?lat=50&lon=10&zoom=5&hideSidebar&hideButtons',
-        middleeast: 'https://globe.adsbexchange.com/?lat=30&lon=45&zoom=5&hideSidebar&hideButtons',
-        asia: 'https://globe.adsbexchange.com/?lat=35&lon=105&zoom=4&hideSidebar&hideButtons',
-        usa: 'https://globe.adsbexchange.com/?lat=39&lon=-98&zoom=4&hideSidebar&hideButtons',
-        global: 'https://globe.adsbexchange.com/?lat=30&lon=0&zoom=2&hideSidebar&hideButtons',
+        europe: 'https://www.flightaware.com/live/map?center=50,10&zoom=5',
+        middleeast: 'https://www.flightaware.com/live/map?center=30,45&zoom=5',
+        asia: 'https://www.flightaware.com/live/map?center=35,105&zoom=4',
+        usa: 'https://www.flightaware.com/live/map?center=39,-98&zoom=4',
+        global: 'https://www.flightaware.com/live/map?center=30,0&zoom=2',
       }
       return regions[region] || regions.global
     }
   },
   marine: {
     name: 'MARINE',
-    // VesselFinder - more reliable marine tracking embeds
+    // MyShipTracking - clean marine tracking without ads
     getUrl: (region) => {
       const regions = {
-        europe: 'https://www.vesselfinder.com/aismap?lat=54&lon=4&zoom=6&width=100%25&height=100%25&names=true&track=false',
-        middleeast: 'https://www.vesselfinder.com/aismap?lat=26&lon=52&zoom=5&width=100%25&height=100%25&names=true&track=false',
-        asia: 'https://www.vesselfinder.com/aismap?lat=25&lon=120&zoom=4&width=100%25&height=100%25&names=true&track=false',
-        usa: 'https://www.vesselfinder.com/aismap?lat=35&lon=-75&zoom=4&width=100%25&height=100%25&names=true&track=false',
-        global: 'https://www.vesselfinder.com/aismap?lat=20&lon=0&zoom=2&width=100%25&height=100%25&names=true&track=false',
+        europe: 'https://www.myshiptracking.com/?zoom=6&lat=54&lon=4',
+        middleeast: 'https://www.myshiptracking.com/?zoom=5&lat=26&lon=52',
+        asia: 'https://www.myshiptracking.com/?zoom=4&lat=25&lon=120',
+        usa: 'https://www.myshiptracking.com/?zoom=4&lat=35&lon=-75',
+        global: 'https://www.myshiptracking.com/?zoom=2&lat=20&lon=0',
       }
       return regions[region] || regions.global
     }
@@ -49,8 +49,8 @@ export default function LiveTracker() {
 
   const openExternal = () => {
     const externalUrls = {
-      flights: 'https://globe.adsbexchange.com/',
-      marine: 'https://www.vesselfinder.com/'
+      flights: 'https://www.flightaware.com/live/',
+      marine: 'https://www.myshiptracking.com/'
     }
     window.open(externalUrls[mode], '_blank', 'noopener,noreferrer')
   }
@@ -101,7 +101,7 @@ export default function LiveTracker() {
       {/* Footer */}
       <div className="tracker-footer">
         <span className="tracker-info">
-          {mode === 'flights' ? 'ADS-B Exchange' : 'VesselFinder'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
+          {mode === 'flights' ? 'FlightAware' : 'MyShipTracking'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
         </span>
         <button className="ext-btn" onClick={openExternal}>
           Open Full Site ↗

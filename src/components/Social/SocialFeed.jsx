@@ -210,13 +210,17 @@ export default function SocialFeed() {
         }
         .social-scroll {
           flex: 1;
-          overflow-y: auto;
+          overflow-y: scroll;
+          overflow-x: hidden;
         }
         .social-scroll::-webkit-scrollbar {
           width: 3px;
         }
         .social-scroll::-webkit-scrollbar-thumb {
           background: var(--neon-amber);
+        }
+        .social-scroll::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.3);
         }
         .social-item {
           display: flex;
