@@ -18,14 +18,14 @@ const TRACKERS = {
   },
   marine: {
     name: 'MARINE',
-    // MyShipTracking - clean marine tracking without ads
+    // ShipFinder - clean embeddable marine tracking
     getUrl: (region) => {
       const regions = {
-        europe: 'https://www.myshiptracking.com/?zoom=6&lat=54&lon=4',
-        middleeast: 'https://www.myshiptracking.com/?zoom=5&lat=26&lon=52',
-        asia: 'https://www.myshiptracking.com/?zoom=4&lat=25&lon=120',
-        usa: 'https://www.myshiptracking.com/?zoom=4&lat=35&lon=-75',
-        global: 'https://www.myshiptracking.com/?zoom=2&lat=20&lon=0',
+        europe: 'https://www.shipfinder.co/map?zoom=5&lat=54&lon=4',
+        middleeast: 'https://www.shipfinder.co/map?zoom=4&lat=26&lon=52',
+        asia: 'https://www.shipfinder.co/map?zoom=4&lat=25&lon=120',
+        usa: 'https://www.shipfinder.co/map?zoom=4&lat=35&lon=-75',
+        global: 'https://www.shipfinder.co/map?zoom=2&lat=20&lon=0',
       }
       return regions[region] || regions.global
     }
@@ -50,7 +50,7 @@ export default function LiveTracker() {
   const openExternal = () => {
     const externalUrls = {
       flights: 'https://www.flightaware.com/live/',
-      marine: 'https://www.myshiptracking.com/'
+      marine: 'https://www.shipfinder.co/'
     }
     window.open(externalUrls[mode], '_blank', 'noopener,noreferrer')
   }
@@ -101,7 +101,7 @@ export default function LiveTracker() {
       {/* Footer */}
       <div className="tracker-footer">
         <span className="tracker-info">
-          {mode === 'flights' ? 'FlightAware' : 'MyShipTracking'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
+          {mode === 'flights' ? 'FlightAware' : 'ShipFinder'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
         </span>
         <button className="ext-btn" onClick={openExternal}>
           Open Full Site ↗

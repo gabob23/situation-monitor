@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// Pool of 24/7 news channels - using channel live stream format
+// Pool of 24/7 news channels from around the world
 const ALL_STREAMS = [
+  // Western
   { id: 'aljazeeraCH', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
   { id: 'france24CH', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
   { id: 'dwCH', name: 'DW News', videoId: 'pqabxBKzZ6M' },
@@ -15,25 +16,36 @@ const ALL_STREAMS = [
   { id: 'africanewsCH', name: 'Africanews', videoId: 'NQjabLGdP5g' },
   { id: 'ndtvCH', name: 'NDTV 24x7', videoId: 'WjzR1vXfWmE' },
   { id: 'abcCH', name: 'ABC News AU', videoId: 'vOTiJkg1voo' },
+  // Asian/Chinese
+  { id: 'cgtnCH', name: 'CGTN', videoId: 'tRx0vx2rJJg' },
+  { id: 'cgtnDocCH', name: 'CGTN Documentary', videoId: 'fegKVPMFo9o' },
+  { id: 'nhkCH', name: 'NHK World Japan', videoId: 'f0lYkdA-Gtw' },
+  { id: 'phoenixCH', name: 'Phoenix News 凤凰卫视', videoId: 'HFeKrPwQ59E' },
+  // More alternatives
+  { id: 'abc2CH', name: 'ABC News Live', videoId: 'w_Ma8oQLmSM' },
+  { id: 'nbcCH', name: 'NBC News Now', videoId: 'YMazKwSReVE' },
 ]
 
-// Default starting streams for each cell
-const DEFAULT_STREAMS = [0, 1, 2, 3]
+// Default starting streams for each cell - diverse mix
+const DEFAULT_STREAMS = [0, 12, 14, 5] // Al Jazeera, CGTN, NHK World, WION
 
 function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
   const [streamIndex, setStreamIndex] = useState(defaultStreamIndex)
   const [showMenu, setShowMenu] = useState(false)
+  const [isReady, setIsReady] = useState(false)
   const playerRef = useRef(null)
+  const keyRef = useRef(0)
 
   const stream = ALL_STREAMS[streamIndex]
   const isActive = activeCell === cellIndex
 
+  // Static opts - never change these to avoid reload
   const opts = {
     height: '100%',
     width: '100%',
     playerVars: {
       autoplay: 1,
-      mute: isActive ? 0 : 1,
+      mute: 1, // Always start muted
       controls: 0,
       disablekb: 1,
       fs: 0,
@@ -47,22 +59,36 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
 
   const handleReady = (event) => {
     playerRef.current = event.target
-    if (isActive) {
-      event.target.unMute()
-    } else {
-      event.target.mute()
-    }
+    setIsReady(true)
+    // Start muted
+    event.target.mute()
   }
 
+  const handleError = (event) => {
+    console.log(`Video error for ${stream.name}, cycling to next...`)
+    // Auto-cycle to next stream on error
+    setTimeout(() => {
+      setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
+      keyRef.current += 1
+      setIsReady(false)
+    }, 1000)
+  }
+
+  // Handle mute/unmute when active state changes
   useEffect(() => {
-    if (playerRef.current) {
-      if (isActive) {
-        playerRef.current.unMute()
-      } else {
-        playerRef.current.mute()
+    if (isReady && playerRef.current) {
+      try {
+        if (isActive) {
+          playerRef.current.unMute()
+          playerRef.current.setVolume(100)
+        } else {
+          playerRef.current.mute()
+        }
+      } catch (e) {
+        console.log('Error toggling mute:', e)
       }
     }
-  }, [isActive])
+  }, [isActive, isReady])
 
   const handleCellClick = () => {
     onActivate(cellIndex)
@@ -71,12 +97,16 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
   const cycleNext = (e) => {
     e.stopPropagation()
     setStreamIndex((prev) => (prev + 1) % ALL_STREAMS.length)
+    keyRef.current += 1
+    setIsReady(false)
     setShowMenu(false)
   }
 
   const selectStream = (idx, e) => {
     e.stopPropagation()
     setStreamIndex(idx)
+    keyRef.current += 1
+    setIsReady(false)
     setShowMenu(false)
   }
 
@@ -107,15 +137,15 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate }) {
       </div>
       <div className="youtube-wrapper">
         <YouTube
+          key={`${stream.id}-${keyRef.current}`}
           videoId={stream.videoId}
           opts={opts}
           onReady={handleReady}
+          onError={handleError}
         />
       </div>
       {isActive && (
-        <div className="active-indicator">
-          <span className="sound-icon">🔊</span>
-        </div>
+        <div className="active-indicator"></div>
       )}
     </div>
   )
@@ -232,9 +262,9 @@ export default function VideoGrid() {
           right: 0;
           background: rgba(10, 10, 15, 0.98);
           border: 1px solid var(--neon-cyan);
-          min-width: 140px;
+          min-width: 180px;
           z-index: 100;
-          max-height: 200px;
+          max-height: 250px;
           overflow-y: auto;
           pointer-events: auto;
         }
@@ -263,14 +293,11 @@ export default function VideoGrid() {
           position: absolute;
           bottom: 8px;
           right: 8px;
-          background: rgba(0, 255, 136, 0.9);
-          padding: 4px 8px;
-          border-radius: 3px;
+          width: 12px;
+          height: 12px;
+          background: var(--neon-green);
+          box-shadow: 0 0 10px var(--neon-green);
           z-index: 10;
-        }
-        .sound-icon {
-          font-size: 14px;
-          filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.8));
         }
         @media (max-width: 768px) {
           .video-grid {
