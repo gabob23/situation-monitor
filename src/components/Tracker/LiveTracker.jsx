@@ -1,31 +1,31 @@
 import { useState } from 'react'
 
-// Tracker modes - using OpenSky Network for flights (open data)
+// Tracker modes - using AirNav RadarBox for flights (allows embedding)
 const TRACKERS = {
   flights: {
     name: 'FLIGHTS',
-    // OpenSky Network live tracking
+    // AirNav RadarBox live tracking
     getUrl: (region) => {
       const regions = {
-        europe: 'https://opensky-network.org/network/explorer?zoom=5&lat=50&lon=10',
-        middleeast: 'https://opensky-network.org/network/explorer?zoom=5&lat=30&lon=45',
-        asia: 'https://opensky-network.org/network/explorer?zoom=4&lat=35&lon=105',
-        usa: 'https://opensky-network.org/network/explorer?zoom=4&lat=39&lon=-98',
-        global: 'https://opensky-network.org/network/explorer?zoom=2&lat=30&lon=0',
+        europe: 'https://www.radarbox.com/?widget=1',
+        middleeast: 'https://www.radarbox.com/?widget=1',
+        asia: 'https://www.radarbox.com/?widget=1',
+        usa: 'https://www.radarbox.com/?widget=1',
+        global: 'https://www.radarbox.com/?widget=1',
       }
       return regions[region] || regions.global
     }
   },
   marine: {
     name: 'MARINE',
-    // ShipFinder - clean embeddable marine tracking
+    // MarineTraffic embeds
     getUrl: (region) => {
       const regions = {
-        europe: 'https://www.shipfinder.co/map?zoom=5&lat=54&lon=4',
-        middleeast: 'https://www.shipfinder.co/map?zoom=4&lat=26&lon=52',
-        asia: 'https://www.shipfinder.co/map?zoom=4&lat=25&lon=120',
-        usa: 'https://www.shipfinder.co/map?zoom=4&lat=35&lon=-75',
-        global: 'https://www.shipfinder.co/map?zoom=2&lat=20&lon=0',
+        europe: 'https://www.marinetraffic.com/en/ais/embed/zoom:6/centery:54/centerx:4/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false',
+        middleeast: 'https://www.marinetraffic.com/en/ais/embed/zoom:5/centery:26/centerx:52/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false',
+        asia: 'https://www.marinetraffic.com/en/ais/embed/zoom:4/centery:25/centerx:120/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false',
+        usa: 'https://www.marinetraffic.com/en/ais/embed/zoom:4/centery:35/centerx:-75/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false',
+        global: 'https://www.marinetraffic.com/en/ais/embed/zoom:2/centery:20/centerx:0/maptype:0/shownames:false/mmsi:0/shipid:0/fleet:/fleet_id:/vtypes:/showmenu:/remember:false',
       }
       return regions[region] || regions.global
     }
@@ -49,8 +49,8 @@ export default function LiveTracker() {
 
   const openExternal = () => {
     const externalUrls = {
-      flights: 'https://opensky-network.org/',
-      marine: 'https://www.shipfinder.co/'
+      flights: 'https://www.radarbox.com/',
+      marine: 'https://www.marinetraffic.com/'
     }
     window.open(externalUrls[mode], '_blank', 'noopener,noreferrer')
   }
@@ -101,7 +101,7 @@ export default function LiveTracker() {
       {/* Footer */}
       <div className="tracker-footer">
         <span className="tracker-info">
-          {mode === 'flights' ? 'OpenSky Network' : 'ShipFinder'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
+          {mode === 'flights' ? 'AirNav RadarBox' : 'MarineTraffic'} - Live {mode === 'flights' ? 'aircraft' : 'vessel'} positions
         </span>
         <button className="ext-btn" onClick={openExternal}>
           Open Full Site ↗

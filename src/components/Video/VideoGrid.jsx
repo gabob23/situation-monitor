@@ -10,7 +10,8 @@ const STREAMS_BY_REGION = {
     { id: 'fox-us', name: 'Fox News', videoId: 'HKXgRUCzLqA' },
   ],
   'South America': [
-    { id: 'telesur', name: 'Telesur', videoId: 'bNJsDCE2Nok' },
+    { id: 'cnn-br', name: 'CNN Brasil', videoId: 'G5pHVRt-F_M' },
+    { id: 'globo', name: 'GloboNews', videoId: 'KvYxZ-qMEl8' },
   ],
   'Europe': [
     { id: 'france24', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
@@ -82,7 +83,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
       setStreamIndex((prev) => (prev + 1) % availableStreams.length)
       keyRef.current += 1
       setIsReady(false)
-    }, 1000)
+    }, 3000) // Wait 3 seconds before cycling to avoid rapid refresh
   }
 
   useEffect(() => {

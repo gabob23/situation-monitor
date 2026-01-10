@@ -1,33 +1,68 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
-// Conflict tracking map sources - simplified, no FIRMS
-const CONFLICT_MAPS = {
-  ukraine: {
-    name: 'Ukraine',
-    url: 'https://liveuamap.com/en',
-  },
-  syria: {
-    name: 'Syria',
-    url: 'https://syria.liveuamap.com/',
-  },
-  middleeast: {
-    name: 'Middle East',
-    url: 'https://mideast.liveuamap.com/',
-  },
-  global: {
-    name: 'Global',
-    url: 'https://liveuamap.com/',
-  },
+// Simple theater configurations - just show a map with markers
+const THEATERS = {
+  ukraine: { name: 'Ukraine', center: [48.5, 36.0], zoom: 6 },
+  syria: { name: 'Syria', center: [35.0, 38.5], zoom: 7 },
+  middleeast: { name: 'Middle East', center: [32.0, 42.0], zoom: 5 },
+  global: { name: 'Global', center: [20, 0], zoom: 2 }
+}
+
+// External links
+const EXTERNAL_LINKS = {
+  ukraine: 'https://liveuamap.com/',
+  syria: 'https://syria.liveuamap.com/',
+  middleeast: 'https://mideast.liveuamap.com/',
+  global: 'https://liveuamap.com/'
 }
 
 export default function ConflictMap() {
-  const [selectedRegion, setSelectedRegion] = useState('ukraine')
+  const mapRef = useRef(null)
+  const mapInstance = useRef(null)
+  const [activeTheater, setActiveTheater] = useState('ukraine')
 
-  const regions = ['ukraine', 'syria', 'middleeast', 'global']
-  const currentMap = CONFLICT_MAPS[selectedRegion]
+  // Initialize Leaflet map
+  useEffect(() => {
+    if (!mapRef.current) return
+
+    // Clean up existing map
+    if (mapInstance.current) {
+      mapInstance.current.remove()
+      mapInstance.current = null
+    }
+
+    const theater = THEATERS[activeTheater]
+
+    const map = L.map(mapRef.current, {
+      center: theater.center,
+      zoom: theater.zoom,
+      zoomControl: false,
+      attributionControl: false
+    })
+
+    // Dark tiles - OpenStreetMap with CSS filter
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '',
+      className: 'dark-tiles'
+    }).addTo(map)
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map)
+
+    mapInstance.current = map
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove()
+        mapInstance.current = null
+      }
+    }
+  }, [activeTheater])
 
   const openExternal = () => {
-    window.open(currentMap.url, '_blank', 'noopener,noreferrer')
+    window.open(EXTERNAL_LINKS[activeTheater], '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -37,33 +72,28 @@ export default function ConflictMap() {
         <div className="control-group">
           <span className="control-label">REGION:</span>
           <div className="region-select">
-            {regions.map((r) => (
+            {Object.entries(THEATERS).map(([key, t]) => (
               <button
-                key={r}
-                className={`ctrl-btn ${r === selectedRegion ? 'active' : ''}`}
-                onClick={() => setSelectedRegion(r)}
+                key={key}
+                className={`ctrl-btn ${key === activeTheater ? 'active' : ''}`}
+                onClick={() => setActiveTheater(key)}
               >
-                {CONFLICT_MAPS[r].name}
+                {t.name}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Map iframe */}
+      {/* Map */}
       <div className="map-content">
-        <iframe
-          key={selectedRegion}
-          src={currentMap.url}
-          title={`${currentMap.name} Conflict Map`}
-          allowFullScreen
-        />
+        <div ref={mapRef} className="leaflet-map" />
       </div>
 
       {/* Footer */}
       <div className="map-footer">
         <span className="map-info">
-          LiveUAMap - Real-time conflict tracking
+          Click "Open Full Site" for detailed conflict tracking
         </span>
         <button className="ext-btn" onClick={openExternal}>
           Open Full Site ↗
@@ -128,10 +158,10 @@ export default function ConflictMap() {
           position: relative;
           min-height: 0;
         }
-        .map-content iframe {
+        .leaflet-map {
           width: 100%;
           height: 100%;
-          border: none;
+          background: #0a0a0f;
         }
         .map-footer {
           display: flex;
@@ -157,6 +187,21 @@ export default function ConflictMap() {
         }
         .ext-btn:hover {
           background: rgba(255, 51, 51, 0.2);
+        }
+        /* Leaflet overrides */
+        .leaflet-container {
+          background: #0a0a0f;
+        }
+        .dark-tiles {
+          filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.2);
+        }
+        .leaflet-control-zoom a {
+          background: rgba(10, 10, 15, 0.9) !important;
+          color: var(--neon-cyan) !important;
+          border-color: rgba(0, 255, 255, 0.3) !important;
+        }
+        .leaflet-control-zoom a:hover {
+          background: rgba(0, 255, 255, 0.2) !important;
         }
       `}</style>
     </div>
