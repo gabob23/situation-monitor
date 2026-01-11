@@ -176,14 +176,14 @@ export default function LiveTracker() {
         }
         .overlay-blocker {
           position: absolute;
-          top: 100px;
-          right: 0;
-          width: 180px;
-          height: 240px;
-          background: #0a0a0f;
+          top: 140px;
+          right: 5px;
+          width: 160px;
+          height: 150px;
+          background: rgba(10, 10, 15, 0.85);
+          backdrop-filter: blur(8px);
           pointer-events: auto;
           z-index: 100;
-          box-shadow: -20px 0 30px 20px #0a0a0f;
         }
         .tracker-footer {
           display: flex;
