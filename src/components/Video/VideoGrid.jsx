@@ -16,9 +16,9 @@ const STREAMS_BY_REGION = {
   ],
   'Europe': [
     { id: 'france24', name: 'France 24 EN', videoId: 'tkDUSYWs-xk' },
-    { id: 'dw', name: 'DW News', videoId: 'NvqZr-us2XI' },
     { id: 'euronews', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
     { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
+    { id: 'bfm', name: 'BFM TV', videoId: 'eUdKS2ZQI0Q' },
   ],
   'Asia': [
     { id: 'wion', name: 'WION', videoId: 'vFS7pOwSUWc' },
