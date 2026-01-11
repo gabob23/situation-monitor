@@ -1,41 +1,53 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// ORIGINAL WORKING STREAMS - Back to basics, NO local news
+// REGION-SPECIFIC STREAMS ONLY - No cross-contamination
+// Reality: Most regional broadcasters block YouTube embedding
 const STREAMS_BY_REGION = {
   'North America': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
+    // No major US/Canadian networks allow embedding - all show error 150
+    // Using working international channels as fallback
     { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
+    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
     { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
+    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
   ],
   'South America': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    // Most LATAM channels block embedding
     { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
+    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
+    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
+    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
   ],
   'Europe': [
     { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
     { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'euronews-fr', name: 'Euronews (FR)', videoId: 'NiRIbKwAejk' },
+    { id: 'euronews-de', name: 'Euronews (DE)', videoId: 'I4fWWvkFf7Y' },
   ],
   'Asia': [
-    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
-    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'cna', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
+    { id: 'wion', name: 'WION India', videoId: 'Qz__Eptw1JM' },
+    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'L7qjQd-P_yM' },
+    { id: 'cna-2', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
   ],
   'Oceania': [
     { id: 'sky-au', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'abc-au', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
+    { id: 'sky-au-2', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
+    { id: 'abc-au-2', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
   ],
   'Middle East': [
     { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
     { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'aljazeera-ar', name: 'Al Jazeera Arabic', videoId: 'ghoov5dTz9M' },
+    { id: 'trt-2', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
   'Africa': [
     { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
     { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'africanews-2', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
 }
 
