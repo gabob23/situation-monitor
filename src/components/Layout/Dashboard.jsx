@@ -21,7 +21,7 @@ export default function Dashboard() {
           </Panel>
 
           <div className="maps-row">
-            <Panel title="CONFLICT MAP // NASA FIRMS" color="red">
+            <Panel title="CONFLICT MAP" color="red">
               <ConflictMap />
             </Panel>
             <Panel title="LIVE TRACKER // FLIGHTS & MARINE" color="cyan">

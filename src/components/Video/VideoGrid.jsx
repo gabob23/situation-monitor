@@ -78,7 +78,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
   }
 
   const handleError = (event) => {
-    console.log(`Video error for ${stream.name}, cycling to next...`)
+    // Auto-cycle to next stream on error
     setTimeout(() => {
       setStreamIndex((prev) => (prev + 1) % availableStreams.length)
       keyRef.current += 1
@@ -96,7 +96,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
           playerRef.current.mute()
         }
       } catch (e) {
-        console.log('Error toggling mute:', e)
+        // Silently ignore mute errors
       }
     }
   }, [isActive, isReady])
