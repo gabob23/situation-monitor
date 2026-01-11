@@ -1,43 +1,42 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// Streams organized by region - NEVER SHOW EMPTY! Auto-cycle on error
+// Streams organized by region - MOST RELIABLE 24/7 YOUTUBE STREAMS ONLY
+// These are public broadcaster channels known for stable, always-on YouTube live streams
 const STREAMS_BY_REGION = {
   'North America': [
-    { id: 'abc-us', name: 'ABC News Live', videoId: 'w_Ma8oQLmSM' },
-    { id: 'nbc-us', name: 'NBC News Now', videoId: 'YMazKwSReVE' },
-    { id: 'cbs-us', name: 'CBS News', videoId: 'cHkVs8cPQu0' },
-    { id: 'fox-us', name: 'Fox News', videoId: 'HKXgRUCzLqA' },
+    { id: 'nbc-news', name: 'NBC News NOW', videoId: 'iwAOZfnRkzo' },
+    { id: 'cbs-news', name: 'CBS News 24/7', videoId: 'VPvANPb5-14' },
+    { id: 'abc-news', name: 'ABC News Live', videoId: 'BKlTuSZbdcs' },
+    { id: 'pbs-news', name: 'PBS NewsHour', videoId: 'tS3eW_S2dCw' },
   ],
   'South America': [
-    { id: 'cnn-br', name: 'CNN Brasil', videoId: 'G5pHVRt-F_M' },
-    { id: 'globo', name: 'GloboNews', videoId: 'KvYxZ-qMEl8' },
+    { id: 'globo', name: 'GloboNews', videoId: 'ybWOQiRlU9g' },
+    { id: 'cnn-chile', name: 'CNN Chile', videoId: 'N9_8-mRzsO8' },
   ],
   'Europe': [
-    { id: 'france24', name: 'France 24 EN', videoId: 'h3MuIUNCCzI' },
-    { id: 'dw', name: 'DW News', videoId: 'pqabxBKzZ6M' },
+    { id: 'france24', name: 'France 24 EN', videoId: 'tkDUSYWs-xk' },
+    { id: 'dw', name: 'DW News', videoId: 'NvqZr-us2XI' },
     { id: 'euronews', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
-    { id: 'sky', name: 'Sky News', videoId: '9Auq9mYxFEE' },
+    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
   ],
   'Asia': [
-    { id: 'cgtn', name: 'CGTN', videoId: 'tRx0vx2rJJg' },
-    { id: 'cna', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
-    { id: 'wion', name: 'WION India', videoId: 'Qz__Eptw1JM' },
-    { id: 'india-today', name: 'India Today', videoId: 'rqc2UfuGN7Q' },
-    { id: 'ndtv', name: 'NDTV 24x7', videoId: 'WjzR1vXfWmE' },
-    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'M1cg5HNierQ' },
-    { id: 'set-taiwan', name: 'SET News Taiwan', videoId: '4ZVUmEUFwaY' },
-    { id: 'phoenix', name: 'Phoenix News 凤凰', videoId: 'HFeKrPwQ59E' },
+    { id: 'wion', name: 'WION', videoId: 'vFS7pOwSUWc' },
+    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
+    { id: 'nhk', name: 'NHK World', videoId: 'f0lYkdA-Gtw' },
+    { id: 'arirang', name: 'Arirang Korea', videoId: 'ba8DRn1N0nY' },
   ],
   'Oceania': [
-    { id: 'abc-au', name: 'ABC News AU', videoId: 'vOTiJkg1voo' },
+    { id: 'abc-au', name: 'ABC News Australia', videoId: 'W1ilCy6XrmI' },
+    { id: 'sky-nz', name: 'Sky News Australia', videoId: 'xeeDXZE3a1Q' },
   ],
   'Middle East': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'aljazeera', name: 'Al Jazeera English', videoId: 'gCNeDWCI0vo' },
+    { id: 'trt', name: 'TRT World', videoId: 'nVx8w6W9TFo' },
   ],
   'Africa': [
-    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+    { id: 'africanews', name: 'Africanews', videoId: 'BVtdfJUrZO0' },
+    { id: 'enca', name: 'eNCA', videoId: 'jqI2RlKSMbY' },
   ],
 }
 
@@ -111,17 +110,31 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   }
 
   const handleError = (event) => {
+    console.log(`Error on ${stream.name} (${stream.videoId}):`, event.data)
+
+    // Ignore certain error codes that are temporary
+    // 2 = Invalid video ID
+    // 5 = HTML5 player error
+    // 100 = Video not found or private
+    // 101/150 = Owner doesn't allow embedding
+    if (event.data === 101 || event.data === 150) {
+      console.log(`${stream.name} doesn't allow embedding, cycling...`)
+    } else if (event.data === -1) {
+      // -1 = player not fully loaded yet, ignore
+      return
+    }
+
     // Clear any pending error timeout to prevent stacking
     if (errorTimeoutRef.current) {
       clearTimeout(errorTimeoutRef.current)
     }
 
-    // Cycle to next stream immediately - don't show broken streams
+    // Cycle to next stream after brief delay
     errorTimeoutRef.current = setTimeout(() => {
       setStreamIndex((prev) => (prev + 1) % availableStreams.length)
       setIsReady(false)
       errorTimeoutRef.current = null
-    }, 500) // Half second delay
+    }, 2000) // 2 second delay
   }
 
   useEffect(() => {
