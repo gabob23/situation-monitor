@@ -379,7 +379,7 @@ export default function VideoGrid() {
         .hls-video {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           background: #000;
         }
         .video-cell-header {
