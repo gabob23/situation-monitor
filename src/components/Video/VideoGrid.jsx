@@ -1,53 +1,49 @@
 import { useState, useEffect, useRef } from 'react'
-import YouTube from 'react-youtube'
+import Hls from 'hls.js'
 
-// REGION-SPECIFIC STREAMS ONLY - No cross-contamination
-// Reality: Most regional broadcasters block YouTube embedding
+// FREE IPTV HLS STREAMS - No embedding restrictions!
 const STREAMS_BY_REGION = {
   'North America': [
-    // No major US/Canadian networks allow embedding - all show error 150
-    // Using working international channels as fallback
-    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
-    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
-    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
-    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
+    { id: 'abc-us', name: 'ABC News US', streamUrl: 'https://abclive2-lh.akamaihd.net/i/abc_live11@423404/master.m3u8' },
+    { id: 'cbs-us', name: 'CBS News', streamUrl: 'http://cbsnewshd-lh.akamaihd.net/i/CBSNHD_7@199302/master.m3u8' },
+    { id: 'bloomberg-us', name: 'Bloomberg US', streamUrl: 'https://liveproduseast.global.ssl.fastly.net/btv/desktop/us_live.m3u8' },
+    { id: 'cgtn-us', name: 'CGTN America', streamUrl: 'http://api.new.livestream.com/accounts/7082210/events/7115682/live.m3u8' },
   ],
   'South America': [
-    // Most LATAM channels block embedding
-    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
-    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
-    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
-    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
+    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
   ],
   'Europe': [
-    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
-    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
-    { id: 'euronews-fr', name: 'Euronews (FR)', videoId: 'NiRIbKwAejk' },
-    { id: 'euronews-de', name: 'Euronews (DE)', videoId: 'I4fWWvkFf7Y' },
+    { id: 'sky-uk', name: 'Sky News UK', streamUrl: 'http://skydvn-nowtv-atv-prod.skydvn.com/atv/skynews/1404/live/index.m3u8' },
+    { id: 'bbc', name: 'BBC World News', streamUrl: 'http://z5ams.akamaized.net/bbcworldnews/tracks-v1a1/index.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
   ],
   'Asia': [
-    { id: 'cna', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
-    { id: 'wion', name: 'WION India', videoId: 'Qz__Eptw1JM' },
-    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'L7qjQd-P_yM' },
-    { id: 'cna-2', name: 'CNA Singapore', videoId: 'XWq5kBlakcQ' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
+    { id: 'cgtn', name: 'CGTN', streamUrl: 'http://api.new.livestream.com/accounts/7082210/events/7115682/live.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'bloomberg-au', name: 'Bloomberg AU', streamUrl: 'https://liveprodapnortheast.global.ssl.fastly.net/btv/desktop/aus_live.m3u8' },
   ],
   'Oceania': [
-    { id: 'sky-au', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
-    { id: 'abc-au', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
-    { id: 'sky-au-2', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
-    { id: 'abc-au-2', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
+    { id: 'abc-au', name: 'ABC News Australia', streamUrl: 'https://abc-iview-mediapackagestreams-1.akamaized.net/out/v1/50345bf35f664739912f0b255c172ae9/index_1.m3u8' },
+    { id: 'bloomberg-au', name: 'Bloomberg AU', streamUrl: 'https://liveprodapnortheast.global.ssl.fastly.net/btv/desktop/aus_live.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
   ],
   'Middle East': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
-    { id: 'aljazeera-ar', name: 'Al Jazeera Arabic', videoId: 'ghoov5dTz9M' },
-    { id: 'trt-2', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
+    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
   ],
   'Africa': [
-    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
-    { id: 'africanews-2', name: 'Africanews', videoId: 'NQjabLGdP5g' },
-    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
+    { id: 'arise', name: 'Arise News', streamUrl: 'http://contributionstreams.ashttp9.visionip.tv/live/visiontv-contributionstreams-arise-tv-hsslive-25f-16x9-SD/chunklist.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
+    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
   ],
 }
 
@@ -81,71 +77,61 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
     }
   }, [selectedRegion, cellIndex, availableStreams.length])
 
-  const opts = {
-    height: '100%',
-    width: '100%',
-    playerVars: {
-      autoplay: 1,
-      mute: 1,
-      controls: 0,
-      disablekb: 1,
-      fs: 0,
-      iv_load_policy: 3,
-      modestbranding: 1,
-      playsinline: 1,
-      rel: 0,
-      showinfo: 0,
-    },
-  }
-
-  const handleReady = (event) => {
-    playerRef.current = event.target
-    setIsReady(true)
-    event.target.mute()
-  }
-
-  const handleError = (event) => {
-    console.log(`Error on ${stream.name} (${stream.videoId}):`, event.data)
-
-    // Ignore certain error codes that are temporary
-    // 2 = Invalid video ID
-    // 5 = HTML5 player error
-    // 100 = Video not found or private
-    // 101/150 = Owner doesn't allow embedding
-    if (event.data === 101 || event.data === 150) {
-      console.log(`${stream.name} doesn't allow embedding, cycling...`)
-    } else if (event.data === -1) {
-      // -1 = player not fully loaded yet, ignore
-      return
-    }
-
-    // Clear any pending error timeout to prevent stacking
-    if (errorTimeoutRef.current) {
-      clearTimeout(errorTimeoutRef.current)
-    }
-
-    // Cycle to next stream after brief delay
-    errorTimeoutRef.current = setTimeout(() => {
-      setStreamIndex((prev) => (prev + 1) % availableStreams.length)
-      setIsReady(false)
-      errorTimeoutRef.current = null
-    }, 2000) // 2 second delay
-  }
-
+  // Initialize HLS player
   useEffect(() => {
-    if (isReady && playerRef.current) {
-      try {
-        if (isActive) {
-          playerRef.current.unMute()
-          playerRef.current.setVolume(100)
-        } else {
-          playerRef.current.mute()
+    const video = playerRef.current
+    if (!video || !stream.streamUrl) return
+
+    // Safari supports HLS natively
+    if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = stream.streamUrl
+      video.play().catch(err => console.log('Play error:', err))
+    } else if (Hls.isSupported()) {
+      const hls = new Hls({
+        enableWorker: true,
+        lowLatencyMode: true,
+      })
+
+      hls.loadSource(stream.streamUrl)
+      hls.attachMedia(video)
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        setIsReady(true)
+        video.play().catch(err => console.log('Play error:', err))
+      })
+
+      hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          console.log(`HLS Error on ${stream.name}:`, data.type, data.details)
+
+          // Clear any pending error timeout
+          if (errorTimeoutRef.current) {
+            clearTimeout(errorTimeoutRef.current)
+          }
+
+          // Cycle to next stream after delay
+          errorTimeoutRef.current = setTimeout(() => {
+            setStreamIndex((prev) => (prev + 1) % availableStreams.length)
+            setIsReady(false)
+            errorTimeoutRef.current = null
+          }, 2000)
         }
-      } catch (e) {
-        // Silently ignore mute errors
+      })
+
+      return () => {
+        hls.destroy()
       }
     }
-  }, [isActive, isReady])
+  }, [stream.streamUrl, availableStreams.length])
+
+  useEffect(() => {
+    if (playerRef.current) {
+      playerRef.current.muted = !isActive
+      if (isActive) {
+        playerRef.current.volume = 1.0
+      }
+    }
+  }, [isActive])
 
   useEffect(() => {
     return () => {
@@ -199,13 +185,14 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
           </div>
         )}
       </div>
-      <div className="youtube-wrapper">
-        <YouTube
+      <div className="video-wrapper">
+        <video
+          ref={playerRef}
           key={`${stream.id}-${streamIndex}`}
-          videoId={stream.videoId}
-          opts={opts}
-          onReady={handleReady}
-          onError={handleError}
+          className="hls-video"
+          muted={!isActive}
+          playsInline
+          autoPlay
         />
       </div>
       {isActive && (
@@ -360,15 +347,15 @@ export default function VideoGrid() {
           border-color: var(--neon-green);
           box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
         }
-        .youtube-wrapper {
+        .video-wrapper {
           width: 100%;
           height: 100%;
         }
-        .youtube-wrapper iframe {
+        .hls-video {
           width: 100%;
           height: 100%;
-          border: none;
-          pointer-events: none;
+          object-fit: cover;
+          background: #000;
         }
         .video-cell-header {
           position: absolute;
