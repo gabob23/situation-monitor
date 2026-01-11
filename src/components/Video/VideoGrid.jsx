@@ -351,7 +351,7 @@ export default function VideoGrid() {
           flex: 1;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          grid-template-rows: 1fr 1fr;
+          grid-auto-rows: 1fr;
           gap: 3px;
           background: #000;
           min-height: 0;
@@ -364,6 +364,7 @@ export default function VideoGrid() {
           cursor: pointer;
           transition: border-color 0.3s;
           min-height: 0;
+          aspect-ratio: 16 / 9;
         }
         .video-cell:hover {
           border-color: rgba(0, 255, 255, 0.5);
