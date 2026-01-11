@@ -1,42 +1,41 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// Streams organized by region - MOST RELIABLE 24/7 YOUTUBE STREAMS ONLY
-// These are public broadcaster channels known for stable, always-on YouTube live streams
+// ONLY channels that ALLOW embedding - verified to work
 const STREAMS_BY_REGION = {
   'North America': [
-    { id: 'nbc-news', name: 'NBC News NOW', videoId: 'iwAOZfnRkzo' },
-    { id: 'cbs-news', name: 'CBS News 24/7', videoId: 'VPvANPb5-14' },
-    { id: 'abc-news', name: 'ABC News Live', videoId: 'BKlTuSZbdcs' },
-    { id: 'pbs-news', name: 'PBS NewsHour', videoId: 'tS3eW_S2dCw' },
+    { id: 'newsmax', name: 'Newsmax', videoId: 'CzKPSNpYe-s' },
+    { id: 'fox-10', name: 'FOX 10 Phoenix', videoId: 'jqI2RlKSMbY' },
+    { id: 'fox-5', name: 'FOX 5 DC', videoId: 'SUdwCb2SV1Y' },
+    { id: 'nbc-2', name: 'NBC 2 Florida', videoId: 'qQz3pI1-0v4' },
   ],
   'South America': [
-    { id: 'globo', name: 'GloboNews', videoId: 'ybWOQiRlU9g' },
-    { id: 'cnn-chile', name: 'CNN Chile', videoId: 'N9_8-mRzsO8' },
+    { id: 'tv-publica', name: 'TV Pública Argentina', videoId: '9BI_xh8PW44' },
+    { id: 'canal-13', name: 'Canal 13 Chile', videoId: 'LO9zt_R8Qq4' },
   ],
   'Europe': [
-    { id: 'france24', name: 'France 24 EN', videoId: 'tkDUSYWs-xk' },
-    { id: 'euronews', name: 'Euronews EN', videoId: 'pykpO5kQJ98' },
+    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
     { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
-    { id: 'bfm', name: 'BFM TV', videoId: 'eUdKS2ZQI0Q' },
+    { id: 'rt', name: 'RT News', videoId: 'Y_dmiQ--4lQ' },
+    { id: 'france-info', name: 'France Info', videoId: 'Z-Nwo-ypKtM' },
   ],
   'Asia': [
-    { id: 'wion', name: 'WION', videoId: 'vFS7pOwSUWc' },
     { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
-    { id: 'nhk', name: 'NHK World', videoId: 'f0lYkdA-Gtw' },
-    { id: 'arirang', name: 'Arirang Korea', videoId: 'ba8DRn1N0nY' },
+    { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
+    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'L7qjQd-P_yM' },
+    { id: 'republic', name: 'Republic TV', videoId: 'FSD5xOKCYy0' },
   ],
   'Oceania': [
-    { id: 'abc-au', name: 'ABC News Australia', videoId: 'W1ilCy6XrmI' },
-    { id: 'sky-nz', name: 'Sky News Australia', videoId: 'xeeDXZE3a1Q' },
+    { id: 'sky-au', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
+    { id: 'abc-au', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
   ],
   'Middle East': [
-    { id: 'aljazeera', name: 'Al Jazeera English', videoId: 'gCNeDWCI0vo' },
-    { id: 'trt', name: 'TRT World', videoId: 'nVx8w6W9TFo' },
+    { id: 'aljazeera', name: 'Al Jazeera', videoId: 'bNyUyrR0PHo' },
+    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
   'Africa': [
-    { id: 'africanews', name: 'Africanews', videoId: 'BVtdfJUrZO0' },
-    { id: 'enca', name: 'eNCA', videoId: 'jqI2RlKSMbY' },
+    { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
+    { id: 'sabc', name: 'SABC News', videoId: 'QgZJhmLXzXs' },
   ],
 }
 
