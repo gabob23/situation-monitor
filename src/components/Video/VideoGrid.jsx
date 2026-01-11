@@ -1,49 +1,49 @@
 import { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
 
-// FREE IPTV HLS STREAMS - No embedding restrictions!
+// IPTV-ORG MAINTAINED STREAMS - Fresh URLs from iptv-org/iptv repo
 const STREAMS_BY_REGION = {
   'North America': [
-    { id: 'abc-us', name: 'ABC News US', streamUrl: 'https://abclive2-lh.akamaihd.net/i/abc_live11@423404/master.m3u8' },
-    { id: 'cbs-us', name: 'CBS News', streamUrl: 'http://cbsnewshd-lh.akamaihd.net/i/CBSNHD_7@199302/master.m3u8' },
-    { id: 'bloomberg-us', name: 'Bloomberg US', streamUrl: 'https://liveproduseast.global.ssl.fastly.net/btv/desktop/us_live.m3u8' },
-    { id: 'cgtn-us', name: 'CGTN America', streamUrl: 'http://api.new.livestream.com/accounts/7082210/events/7115682/live.m3u8' },
+    { id: 'nbc-news', name: 'NBC News NOW', streamUrl: 'https://livehub-voidnet.onrender.com/cluster/streamcore/us/NBC_REDIS.m3u8' },
+    { id: 'newsmax', name: 'Newsmax TV', streamUrl: 'https://nmx1ota.akamaized.net/hls/live/2107010/Live_1/index.m3u8' },
+    { id: 'alhurra', name: 'Alhurra', streamUrl: 'https://mbn-ingest-worldsafe.akamaized.net/hls/live/2038900/MBN_Alhurra_Worldsafe_HLS/master.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8' },
   ],
   'South America': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
-    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
-    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
+    { id: 'telesur', name: 'Telesur HD', streamUrl: 'https://mblesmain01.telesur.ultrabase.net/mbliveMain/hd/playlist.m3u8' },
+    { id: 'france24', name: 'France 24 EN', streamUrl: 'https://amg00106-france24-france24-samsunguk-qvpp8.amagi.tv/playlist/amg00106-france24-france24-samsunguk/playlist.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8' },
+    { id: 'dw', name: 'DW English', streamUrl: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8' },
   ],
   'Europe': [
-    { id: 'sky-uk', name: 'Sky News UK', streamUrl: 'http://skydvn-nowtv-atv-prod.skydvn.com/atv/skynews/1404/live/index.m3u8' },
-    { id: 'bbc', name: 'BBC World News', streamUrl: 'http://z5ams.akamaized.net/bbcworldnews/tracks-v1a1/index.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
-    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
+    { id: 'france24', name: 'France 24 EN', streamUrl: 'https://amg00106-france24-france24-samsunguk-qvpp8.amagi.tv/playlist/amg00106-france24-france24-samsunguk/playlist.m3u8' },
+    { id: 'dw', name: 'DW English', streamUrl: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8' },
+    { id: 'euronews', name: 'Euronews EN', streamUrl: 'https://a-cdn.klowdtv.com/live3/euronews_720p/playlist.m3u8' },
+    { id: 'rt', name: 'RT News', streamUrl: 'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8' },
   ],
   'Asia': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
-    { id: 'cgtn', name: 'CGTN', streamUrl: 'http://api.new.livestream.com/accounts/7082210/events/7115682/live.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
-    { id: 'bloomberg-au', name: 'Bloomberg AU', streamUrl: 'https://liveprodapnortheast.global.ssl.fastly.net/btv/desktop/aus_live.m3u8' },
+    { id: 'cna', name: 'CNA', streamUrl: 'https://mediacorp-videosbclive.akamaized.net/dd724cfb0e8e4cdc921bbc4ac94614bf/ap-southeast-1/6057994443001/playlist.m3u8' },
+    { id: 'india-today', name: 'India Today', streamUrl: 'https://indiatodaylive.akamaized.net/hls/live/2014320/indiatoday/indiatodaylive/playlist.m3u8' },
+    { id: 'nhk', name: 'NHK World-Japan', streamUrl: 'https://livehub-voidnet.onrender.com/cluster/streamcore/jp/NHK_StreamOrchestrator.m3u8' },
+    { id: 'cgtn', name: 'CGTN', streamUrl: 'https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/master.m3u8' },
   ],
   'Oceania': [
-    { id: 'abc-au', name: 'ABC News Australia', streamUrl: 'https://abc-iview-mediapackagestreams-1.akamaized.net/out/v1/50345bf35f664739912f0b255c172ae9/index_1.m3u8' },
-    { id: 'bloomberg-au', name: 'Bloomberg AU', streamUrl: 'https://liveprodapnortheast.global.ssl.fastly.net/btv/desktop/aus_live.m3u8' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
+    { id: 'cna', name: 'CNA', streamUrl: 'https://mediacorp-videosbclive.akamaized.net/dd724cfb0e8e4cdc921bbc4ac94614bf/ap-southeast-1/6057994443001/playlist.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8' },
+    { id: 'france24', name: 'France 24 EN', streamUrl: 'https://amg00106-france24-france24-samsunguk-qvpp8.amagi.tv/playlist/amg00106-france24-france24-samsunguk/playlist.m3u8' },
+    { id: 'dw', name: 'DW English', streamUrl: 'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/master.m3u8' },
   ],
   'Middle East': [
-    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
-    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
-    { id: 'dw', name: 'DW News', streamUrl: 'http://dwstream4-lh.akamaihd.net/i/dwstream4_live@131329/master.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8' },
+    { id: 'sky-arabia', name: 'Sky News Arabia', streamUrl: 'https://live-stream.skynewsarabia.com/c-horizontal-channel/horizontal-stream/index.m3u8' },
+    { id: 'trt', name: 'TRT World', streamUrl: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8' },
+    { id: 'press-tv', name: 'Press TV', streamUrl: 'https://cloud.odysee.live/content/26bcbcc342a5b143578f27dbfaf000201f06e417/master.m3u8' },
   ],
   'Africa': [
-    { id: 'arise', name: 'Arise News', streamUrl: 'http://contributionstreams.ashttp9.visionip.tv/live/visiontv-contributionstreams-arise-tv-hsslive-25f-16x9-SD/chunklist.m3u8' },
-    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-web-aje.getaj.net/AJE/index.m3u8' },
-    { id: 'france24', name: 'France 24', streamUrl: 'http://f24hls-i.akamaihd.net/hls/live/221193/F24_EN_LO_HLS/master_900.m3u8' },
-    { id: 'trt', name: 'TRT World', streamUrl: 'http://trtcanlitv-lh.akamaihd.net/i/TRTWORLD_1@321783/master.m3u8' },
+    { id: 'africanews', name: 'Africanews', streamUrl: 'https://d35j504z0x2vu2.cloudfront.net/v1/master/0bc8e8376bd8417a1b6761138aa41c26c7309312/africanews/africanews-en.m3u8' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', streamUrl: 'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8' },
+    { id: 'france24', name: 'France 24 EN', streamUrl: 'https://amg00106-france24-france24-samsunguk-qvpp8.amagi.tv/playlist/amg00106-france24-france24-samsunguk/playlist.m3u8' },
+    { id: 'trt', name: 'TRT World', streamUrl: 'https://tv-trtworld.medya.trt.com.tr/master.m3u8' },
   ],
 }
 
