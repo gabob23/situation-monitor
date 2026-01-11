@@ -1,67 +1,49 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 
-// ONLY channels that ALLOW embedding - verified to work
+// ORIGINAL WORKING STREAMS - Back to basics, NO local news
 const STREAMS_BY_REGION = {
   'North America': [
-    { id: 'newsmax', name: 'Newsmax', videoId: 'CzKPSNpYe-s' },
-    { id: 'fox-10', name: 'FOX 10 Phoenix', videoId: 'jqI2RlKSMbY' },
-    { id: 'fox-5', name: 'FOX 5 DC', videoId: 'SUdwCb2SV1Y' },
-    { id: 'nbc-2', name: 'NBC 2 Florida', videoId: 'qQz3pI1-0v4' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
+    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
+    { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
   ],
   'South America': [
-    { id: 'tv-publica', name: 'TV Pública Argentina', videoId: '9BI_xh8PW44' },
-    { id: 'canal-13', name: 'Canal 13 Chile', videoId: 'LO9zt_R8Qq4' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
   ],
   'Europe': [
     { id: 'euronews', name: 'Euronews', videoId: 'pykpO5kQJ98' },
     { id: 'gbn', name: 'GB News', videoId: 'GpJmUWiJgb4' },
-    { id: 'rt', name: 'RT News', videoId: 'Y_dmiQ--4lQ' },
-    { id: 'france-info', name: 'France Info', videoId: 'Z-Nwo-ypKtM' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
   'Asia': [
     { id: 'cna', name: 'CNA', videoId: 'XWq5kBlakcQ' },
     { id: 'wion', name: 'WION', videoId: 'Qz__Eptw1JM' },
-    { id: 'tvbs', name: 'TVBS Taiwan', videoId: 'L7qjQd-P_yM' },
-    { id: 'republic', name: 'Republic TV', videoId: 'FSD5xOKCYy0' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
+    { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
   'Oceania': [
     { id: 'sky-au', name: 'Sky News Australia', videoId: 'NvqAbRN39d8' },
-    { id: 'abc-au', name: 'ABC Australia', videoId: 'vOTiJkg1voo' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
   ],
   'Middle East': [
-    { id: 'aljazeera', name: 'Al Jazeera', videoId: 'bNyUyrR0PHo' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
     { id: 'trt', name: 'TRT World', videoId: '5VF4aor94gw' },
   ],
   'Africa': [
     { id: 'africanews', name: 'Africanews', videoId: 'NQjabLGdP5g' },
-    { id: 'sabc', name: 'SABC News', videoId: 'QgZJhmLXzXs' },
+    { id: 'aljazeera', name: 'Al Jazeera EN', videoId: 'bNyUyrR0PHo' },
   ],
 }
 
-// Flatten all streams for GLOBAL mode
-const ALL_STREAMS = Object.values(STREAMS_BY_REGION).flat()
-
-// Ensure we always have at least 4 unique streams for the 4 cells
-const getStreamPool = (region) => {
-  if (region === 'GLOBAL') return ALL_STREAMS
-
-  const regionStreams = STREAMS_BY_REGION[region] || []
-  if (regionStreams.length >= 4) return regionStreams
-
-  // Region has fewer than 4 streams, supplement with global streams to avoid duplicates
-  const pool = [...regionStreams]
-  const regionIds = new Set(regionStreams.map(s => s.id))
-
-  for (const stream of ALL_STREAMS) {
-    if (!regionIds.has(stream.id)) {
-      pool.push(stream)
-      if (pool.length >= 4) break
-    }
-  }
-
-  return pool
-}
+// Flatten all streams for GLOBAL mode - REMOVE DUPLICATES
+const ALL_STREAMS_WITH_DUPES = Object.values(STREAMS_BY_REGION).flat()
+const ALL_STREAMS = Array.from(
+  new Map(ALL_STREAMS_WITH_DUPES.map(s => [s.id, s])).values()
+)
 
 function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   const [streamIndex, setStreamIndex] = useState(cellIndex)
@@ -71,8 +53,10 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   const errorTimeoutRef = useRef(null)
   const prevRegionRef = useRef(selectedRegion)
 
-  // Get available streams based on region (always at least 4 unique streams)
-  const availableStreams = getStreamPool(selectedRegion)
+  // Get available streams based on region
+  const availableStreams = selectedRegion === 'GLOBAL'
+    ? ALL_STREAMS
+    : STREAMS_BY_REGION[selectedRegion] || ALL_STREAMS
 
   const stream = availableStreams[streamIndex % availableStreams.length]
   const isActive = activeCell === cellIndex
@@ -80,10 +64,10 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   // Reset to cell index when region changes (keeps cells different)
   useEffect(() => {
     if (prevRegionRef.current !== selectedRegion) {
-      setStreamIndex(cellIndex)
+      setStreamIndex(cellIndex % availableStreams.length)
       prevRegionRef.current = selectedRegion
     }
-  }, [selectedRegion, cellIndex])
+  }, [selectedRegion, cellIndex, availableStreams.length])
 
   const opts = {
     height: '100%',
