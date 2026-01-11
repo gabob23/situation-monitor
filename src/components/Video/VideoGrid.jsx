@@ -354,6 +354,7 @@ export default function VideoGrid() {
           grid-template-rows: 1fr 1fr;
           gap: 3px;
           background: #000;
+          min-height: 0;
         }
         .video-cell {
           position: relative;
@@ -362,6 +363,7 @@ export default function VideoGrid() {
           overflow: hidden;
           cursor: pointer;
           transition: border-color 0.3s;
+          min-height: 0;
         }
         .video-cell:hover {
           border-color: rgba(0, 255, 255, 0.5);
