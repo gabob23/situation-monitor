@@ -44,6 +44,27 @@ const STREAMS_BY_REGION = {
 // Flatten all streams for GLOBAL mode
 const ALL_STREAMS = Object.values(STREAMS_BY_REGION).flat()
 
+// Ensure we always have at least 4 unique streams for the 4 cells
+const getStreamPool = (region) => {
+  if (region === 'GLOBAL') return ALL_STREAMS
+
+  const regionStreams = STREAMS_BY_REGION[region] || []
+  if (regionStreams.length >= 4) return regionStreams
+
+  // Region has fewer than 4 streams, supplement with global streams to avoid duplicates
+  const pool = [...regionStreams]
+  const regionIds = new Set(regionStreams.map(s => s.id))
+
+  for (const stream of ALL_STREAMS) {
+    if (!regionIds.has(stream.id)) {
+      pool.push(stream)
+      if (pool.length >= 4) break
+    }
+  }
+
+  return pool
+}
+
 function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   const [streamIndex, setStreamIndex] = useState(cellIndex)
   const [showMenu, setShowMenu] = useState(false)
@@ -52,10 +73,8 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   const errorTimeoutRef = useRef(null)
   const prevRegionRef = useRef(selectedRegion)
 
-  // Get available streams based on region
-  const availableStreams = selectedRegion === 'GLOBAL'
-    ? ALL_STREAMS
-    : STREAMS_BY_REGION[selectedRegion] || ALL_STREAMS
+  // Get available streams based on region (always at least 4 unique streams)
+  const availableStreams = getStreamPool(selectedRegion)
 
   const stream = availableStreams[streamIndex % availableStreams.length]
   const isActive = activeCell === cellIndex
@@ -63,10 +82,10 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   // Reset to cell index when region changes (keeps cells different)
   useEffect(() => {
     if (prevRegionRef.current !== selectedRegion) {
-      setStreamIndex(cellIndex % availableStreams.length)
+      setStreamIndex(cellIndex)
       prevRegionRef.current = selectedRegion
     }
-  }, [selectedRegion, cellIndex, availableStreams.length])
+  }, [selectedRegion, cellIndex])
 
   const opts = {
     height: '100%',
@@ -97,12 +116,12 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
       clearTimeout(errorTimeoutRef.current)
     }
 
-    // Cycle to next stream after delay
+    // Cycle to next stream immediately - don't show broken streams
     errorTimeoutRef.current = setTimeout(() => {
       setStreamIndex((prev) => (prev + 1) % availableStreams.length)
       setIsReady(false)
       errorTimeoutRef.current = null
-    }, 5000) // 5 second delay
+    }, 500) // Half second delay
   }
 
   useEffect(() => {
