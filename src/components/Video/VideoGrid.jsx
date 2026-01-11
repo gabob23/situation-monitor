@@ -44,15 +44,29 @@ const STREAMS_BY_REGION = {
 // Flatten all streams for GLOBAL mode
 const ALL_STREAMS = Object.values(STREAMS_BY_REGION).flat()
 
-function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, availableStreams }) {
-  const [streamIndex, setStreamIndex] = useState(defaultStreamIndex)
+function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
+  const [streamIndex, setStreamIndex] = useState(cellIndex)
   const [showMenu, setShowMenu] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const playerRef = useRef(null)
-  const keyRef = useRef(0)
+  const errorTimeoutRef = useRef(null)
+  const prevRegionRef = useRef(selectedRegion)
+
+  // Get available streams based on region
+  const availableStreams = selectedRegion === 'GLOBAL'
+    ? ALL_STREAMS
+    : STREAMS_BY_REGION[selectedRegion] || ALL_STREAMS
 
   const stream = availableStreams[streamIndex % availableStreams.length]
   const isActive = activeCell === cellIndex
+
+  // Reset to cell index when region changes (keeps cells different)
+  useEffect(() => {
+    if (prevRegionRef.current !== selectedRegion) {
+      setStreamIndex(cellIndex % availableStreams.length)
+      prevRegionRef.current = selectedRegion
+    }
+  }, [selectedRegion, cellIndex, availableStreams.length])
 
   const opts = {
     height: '100%',
@@ -78,12 +92,17 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
   }
 
   const handleError = (event) => {
-    // Auto-cycle to next stream on error
-    setTimeout(() => {
+    // Clear any pending error timeout to prevent stacking
+    if (errorTimeoutRef.current) {
+      clearTimeout(errorTimeoutRef.current)
+    }
+
+    // Cycle to next stream after delay
+    errorTimeoutRef.current = setTimeout(() => {
       setStreamIndex((prev) => (prev + 1) % availableStreams.length)
-      keyRef.current += 1
       setIsReady(false)
-    }, 3000) // Wait 3 seconds before cycling to avoid rapid refresh
+      errorTimeoutRef.current = null
+    }, 5000) // 5 second delay
   }
 
   useEffect(() => {
@@ -101,6 +120,15 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
     }
   }, [isActive, isReady])
 
+  useEffect(() => {
+    return () => {
+      // Cleanup timeout on unmount
+      if (errorTimeoutRef.current) {
+        clearTimeout(errorTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handleCellClick = () => {
     onActivate(cellIndex)
   }
@@ -108,7 +136,6 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
   const cycleNext = (e) => {
     e.stopPropagation()
     setStreamIndex((prev) => (prev + 1) % availableStreams.length)
-    keyRef.current += 1
     setIsReady(false)
     setShowMenu(false)
   }
@@ -116,17 +143,9 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
   const selectStream = (idx, e) => {
     e.stopPropagation()
     setStreamIndex(idx)
-    keyRef.current += 1
     setIsReady(false)
     setShowMenu(false)
   }
-
-  // Reset stream index when available streams change
-  useEffect(() => {
-    setStreamIndex(defaultStreamIndex % availableStreams.length)
-    keyRef.current += 1
-    setIsReady(false)
-  }, [availableStreams, defaultStreamIndex])
 
   return (
     <div
@@ -155,7 +174,7 @@ function VideoCell({ defaultStreamIndex, cellIndex, activeCell, onActivate, avai
       </div>
       <div className="youtube-wrapper">
         <YouTube
-          key={`${stream.id}-${keyRef.current}`}
+          key={`${stream.id}-${streamIndex}`}
           videoId={stream.videoId}
           opts={opts}
           onReady={handleReady}
@@ -174,10 +193,6 @@ export default function VideoGrid() {
   const [selectedRegion, setSelectedRegion] = useState('GLOBAL')
 
   const regions = ['GLOBAL', 'North America', 'South America', 'Europe', 'Asia', 'Oceania', 'Middle East', 'Africa']
-
-  const availableStreams = selectedRegion === 'GLOBAL'
-    ? ALL_STREAMS
-    : STREAMS_BY_REGION[selectedRegion] || ALL_STREAMS
 
   const muteAll = () => {
     setActiveCell(null)
@@ -205,32 +220,28 @@ export default function VideoGrid() {
 
       <div className="video-grid">
         <VideoCell
-          defaultStreamIndex={0}
           cellIndex={0}
           activeCell={activeCell}
           onActivate={setActiveCell}
-          availableStreams={availableStreams}
+          selectedRegion={selectedRegion}
         />
         <VideoCell
-          defaultStreamIndex={1}
           cellIndex={1}
           activeCell={activeCell}
           onActivate={setActiveCell}
-          availableStreams={availableStreams}
+          selectedRegion={selectedRegion}
         />
         <VideoCell
-          defaultStreamIndex={2}
           cellIndex={2}
           activeCell={activeCell}
           onActivate={setActiveCell}
-          availableStreams={availableStreams}
+          selectedRegion={selectedRegion}
         />
         <VideoCell
-          defaultStreamIndex={3}
           cellIndex={3}
           activeCell={activeCell}
           onActivate={setActiveCell}
-          availableStreams={availableStreams}
+          selectedRegion={selectedRegion}
         />
       </div>
 
