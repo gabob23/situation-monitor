@@ -58,6 +58,7 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   const [showMenu, setShowMenu] = useState(false)
   const [isReady, setIsReady] = useState(false)
   const playerRef = useRef(null)
+  const hlsRef = useRef(null)
   const errorTimeoutRef = useRef(null)
   const prevRegionRef = useRef(selectedRegion)
 
@@ -80,29 +81,45 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
   // Initialize HLS player
   useEffect(() => {
     const video = playerRef.current
-    if (!video || !stream.streamUrl) return
+    if (!video || !stream.streamUrl) {
+      console.log('No video element or stream URL', stream)
+      return
+    }
+
+    console.log(`Loading ${stream.name}: ${stream.streamUrl}`)
+
+    // Cleanup previous HLS instance
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
+    }
 
     // Safari supports HLS natively
     if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = stream.streamUrl
-      video.play().catch(err => console.log('Play error:', err))
+      setIsReady(true)
+      video.play().catch(err => console.log(`${stream.name} play error:`, err))
     } else if (Hls.isSupported()) {
       const hls = new Hls({
         enableWorker: true,
         lowLatencyMode: true,
+        debug: false,
       })
+
+      hlsRef.current = hls
 
       hls.loadSource(stream.streamUrl)
       hls.attachMedia(video)
 
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        console.log(`${stream.name} manifest parsed`)
         setIsReady(true)
-        video.play().catch(err => console.log('Play error:', err))
+        video.play().catch(err => console.log(`${stream.name} play error:`, err))
       })
 
       hls.on(Hls.Events.ERROR, (event, data) => {
         if (data.fatal) {
-          console.log(`HLS Error on ${stream.name}:`, data.type, data.details)
+          console.error(`HLS FATAL Error on ${stream.name}:`, data.type, data.details)
 
           // Clear any pending error timeout
           if (errorTimeoutRef.current) {
@@ -111,18 +128,24 @@ function VideoCell({ cellIndex, activeCell, onActivate, selectedRegion }) {
 
           // Cycle to next stream after delay
           errorTimeoutRef.current = setTimeout(() => {
+            console.log(`${stream.name} cycling to next stream...`)
             setStreamIndex((prev) => (prev + 1) % availableStreams.length)
             setIsReady(false)
             errorTimeoutRef.current = null
           }, 2000)
         }
       })
+    } else {
+      console.error('HLS not supported in this browser')
+    }
 
-      return () => {
-        hls.destroy()
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy()
+        hlsRef.current = null
       }
     }
-  }, [stream.streamUrl, availableStreams.length])
+  }, [stream.streamUrl, stream.name, availableStreams.length])
 
   useEffect(() => {
     if (playerRef.current) {
