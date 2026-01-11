@@ -96,6 +96,8 @@ export default function LiveTracker() {
           title={`${tracker.name} Tracker`}
           allowFullScreen
         />
+        {/* Block AirNav overlay buttons */}
+        <div className="overlay-blocker"></div>
       </div>
 
       {/* Footer */}
@@ -171,6 +173,16 @@ export default function LiveTracker() {
           height: 100%;
           border: none;
           filter: saturate(0.8) brightness(0.9);
+        }
+        .overlay-blocker {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 200px;
+          height: 400px;
+          background: linear-gradient(to left, rgba(10, 10, 15, 0.95), transparent);
+          pointer-events: auto;
+          z-index: 100;
         }
         .tracker-footer {
           display: flex;
