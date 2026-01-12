@@ -25,7 +25,7 @@ const STREAMS_BY_REGION = {
     { id: 'nhk', name: 'NHK World-Japan', streamUrl: 'https://media-tyo.hls.nhkworld.jp/hls/w/live/master.m3u8' },
     { id: 'cgtn', name: 'CGTN', streamUrl: 'https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/master.m3u8' },
     { id: 'wion', name: 'WION', streamUrl: 'https://d7x8z4yuq42qn.cloudfront.net/index_7.m3u8' },
-    { id: 'arirang', name: 'Arirang TV', streamUrl: 'https://amdlive-ch01-ctnd-com.akamaized.net/arirang_1ch/smil:arirang_1ch.smil/playlist.m3u8' },
+    { id: 'republic', name: 'Republic TV', streamUrl: 'https://d3qs3d2rkhfqrt.cloudfront.net/out/v1/2e31d831f08640ff92f65003bdc89991/index.m3u8' },
   ],
   'Oceania': [
     { id: 'cna', name: 'CNA', streamUrl: 'https://mediacorp-videosbclive.akamaized.net/dd724cfb0e8e4cdc921bbc4ac94614bf/ap-southeast-1/6057994443001/playlist.m3u8' },
