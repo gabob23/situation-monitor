@@ -22,10 +22,10 @@ const STREAMS_BY_REGION = {
     { id: 'rt', name: 'RT News', streamUrl: 'https://rt-glb.rttv.com/live/rtnews/playlist.m3u8' },
   ],
   'Asia': [
-    { id: 'nhk', name: 'NHK World-Japan', streamUrl: 'https://nhkworld-tv.akamaized.net/hls/live/2115640/nhkworld-tv/index_1M.m3u8' },
+    { id: 'nhk', name: 'NHK World-Japan', streamUrl: 'https://media-tyo.hls.nhkworld.jp/hls/w/live/master.m3u8' },
     { id: 'cgtn', name: 'CGTN', streamUrl: 'https://amg00405-rakutentv-cgtn-rakuten-i9tar.amagi.tv/master.m3u8' },
-    { id: 'wion', name: 'WION', streamUrl: 'https://jmp2.uk/SamsungTVPlus/INBD4000058T.m3u8' },
-    { id: 'arirang', name: 'Arirang TV', streamUrl: 'http://worldlive-ios.arirang.co.kr/arirang/arirangtvworldios.mp4.m3u8' },
+    { id: 'wion', name: 'WION', streamUrl: 'https://d7x8z4yuq42qn.cloudfront.net/index_7.m3u8' },
+    { id: 'arirang', name: 'Arirang TV', streamUrl: 'https://amdlive-ch01-ctnd-com.akamaized.net/arirang_1ch/smil:arirang_1ch.smil/playlist.m3u8' },
   ],
   'Oceania': [
     { id: 'cna', name: 'CNA', streamUrl: 'https://mediacorp-videosbclive.akamaized.net/dd724cfb0e8e4cdc921bbc4ac94614bf/ap-southeast-1/6057994443001/playlist.m3u8' },
